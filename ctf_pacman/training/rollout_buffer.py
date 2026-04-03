@@ -148,13 +148,12 @@ class RolloutBuffer:
             last_gae = delta + gamma * gae_lambda * (1.0 - nd) * last_gae
             advantages[t] = last_gae
 
-        self.advantages = advantages
-        self.returns = advantages + self.values
-
         # Normalize per-agent across (T, E) dimensions
         for a in range(A):
             adv_a = self.advantages[:, :, a]
             self.advantages[:, :, a] = (adv_a - adv_a.mean()) / (adv_a.std() + 1e-8)
+
+        self.returns = self.advantages + self.values
 
     # ------------------------------------------------------------------
     # Minibatch iteration

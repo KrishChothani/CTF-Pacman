@@ -218,6 +218,7 @@ def test_env_step_capture(cfg: EnvConfig) -> None:
     env._state["agent_positions"][2] = (capture_x, capture_y)   # invading attacker
     env._state["agent_scared"][1] = 0                            # defender not scared
     env._state["agent_carrying"][2] = 3                          # attacker carrying food
+    env._state["power_pellet_positions"] = set()                 # prevent accidental scared state
 
     _, _, _, _, info = env.step({0: 4, 1: 4, 2: 4, 3: 4})
 

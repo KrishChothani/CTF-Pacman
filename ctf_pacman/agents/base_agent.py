@@ -219,7 +219,7 @@ class BaseAgent(ABC, nn.Module):
                 action = int(dist.sample().item())
 
             log_prob = float(dist.log_prob(torch.tensor(action, device=self.device)).item())
-            entropy = dist.entropy()
+            entropy = float(dist.entropy().item())
 
         self.train()
         return action, log_prob, entropy

@@ -176,6 +176,11 @@ def test_rule_based_attacker_moves_toward_food() -> None:
     mid = env_cfg.map_width // 2
     # Clear existing food and place exactly one item in opponent territory
     env._state["food_positions"] = {(mid + 2, 4)}
+    
+    # Move other agents explicitly out of the way to prevent accidental captures
+    env._state["agent_positions"][1] = (1, 1)
+    env._state["agent_positions"][2] = (env_cfg.map_width - 2, 1)
+    env._state["agent_positions"][3] = (env_cfg.map_width - 2, 6)
 
     agent = RuleBasedAgent(role="attacker")
     reached = False

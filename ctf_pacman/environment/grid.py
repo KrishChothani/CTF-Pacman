@@ -82,8 +82,9 @@ class Grid:
 
         # 3. Symmetric random interior walls
         mid = w // 2
+        bound = mid - 1 if w % 2 == 0 else mid
         for y in range(1, h - 1):
-            for x in range(1, mid):  # left half only
+            for x in range(1, bound):  # left half only
                 if walls[y, x]:
                     continue
                 if self._rng.random() < self.wall_density:
@@ -107,11 +108,15 @@ class Grid:
         # Place divider for entire column
         for y in range(h):
             walls[y, mid] = True
+            if w % 2 == 0:
+                walls[y, mid - 1] = True
         # Three passage gaps
         gap_rows = [h // 4, h // 2, 3 * h // 4]
         for gy in gap_rows:
             gy = max(1, min(h - 2, gy))
             walls[gy, mid] = False
+            if w % 2 == 0:
+                walls[gy, mid - 1] = False
 
     def _is_connected(self, walls: np.ndarray) -> bool:
         """BFS from the first non-wall cell to verify all non-wall cells are reachable."""
