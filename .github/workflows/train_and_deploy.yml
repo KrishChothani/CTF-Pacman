@@ -1,0 +1,47 @@
+name: Train and Deploy Model
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  train-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Run Tests
+        run: pytest tests/
+
+      - name: Train Model
+        run: |
+          # Use a smaller config for CI/CD or the default one.
+          # To use a specific config, replace default.yaml with the target config file.
+          python scripts/train.py --config configs/default.yaml
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1 # Change to your preferred region
+
+      - name: Upload to S3
+        run: |
+          # Assuming log_dir in default.yaml is 'logs/' and experiment_name is 'ctf_pacman_run'
+          # Adjust the path below to match your actual logging config
+          aws s3 sync logs/ctf_pacman_run s3://${{ secrets.AWS_S3_BUCKET }}/ctf_pacman_models/$(date +'%Y-%m-%d_%H-%M-%S')/

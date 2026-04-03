@@ -1,0 +1,8 @@
+env:
+  map_width: 48
+  map_height: 24
+  num_food_per_team: 32
+  max_steps: 500
+
+training:
+  num_envs: 8

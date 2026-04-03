@@ -1,0 +1,5 @@
+env:
+  map_width: 20
+  map_height: 10
+  num_food_per_team: 12
+  max_steps: 200
