@@ -42,6 +42,5 @@ jobs:
 
       - name: Upload to S3
         run: |
-          # Assuming log_dir in default.yaml is 'logs/' and experiment_name is 'ctf_pacman_run'
-          # Adjust the path below to match your actual logging config
-          aws s3 sync logs/ctf_pacman_run s3://${{ secrets.AWS_S3_BUCKET }}/ctf_pacman_models/$(date +'%Y-%m-%d_%H-%M-%S')/
+          # Using log_dir='runs/' and experiment_name='ci_test_run' from configs/ci.yaml
+          aws s3 sync runs/ci_test_run s3://${{ secrets.AWS_S3_BUCKET }}/ctf_pacman_models/$(date +'%Y-%m-%d_%H-%M-%S')/
