@@ -42,5 +42,16 @@ jobs:
 
       - name: Upload to S3
         run: |
+          # Use secrets.AWS_S3_BUCKET if present, otherwise fallback to a generated unique name
+          BUCKET_NAME="${{ secrets.AWS_S3_BUCKET }}"
+          if [ -z "$BUCKET_NAME" ]; then
+            ACTOR=$(echo "${{ github.actor }}" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-')
+            BUCKET_NAME="ctf-pacman-logs-$ACTOR"
+          fi
+          
+          echo "Target bucket: $BUCKET_NAME"
+          # Create the bucket if it doesn't exist. Ignore errors (e.g. if bucket already exists)
+          aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null || aws s3 mb "s3://$BUCKET_NAME"
+          
           # Using log_dir='runs/' and experiment_name='ci_test_run' from configs/ci.yaml
-          aws s3 sync runs/ci_test_run s3://${{ secrets.AWS_S3_BUCKET }}/ctf_pacman_models/$(date +'%Y-%m-%d_%H-%M-%S')/
+          aws s3 sync runs/ci_test_run "s3://$BUCKET_NAME/ctf_pacman_models/$(date +'%Y-%m-%d_%H-%M-%S')/"
