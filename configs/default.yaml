@@ -26,7 +26,7 @@ model:
   message_hidden_dim: 64
 
 training:
-  total_timesteps: 5000000
+  total_timesteps: 100000
   num_envs: 16
   rollout_length: 128
   num_ppo_epochs: 4
