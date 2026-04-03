@@ -1,0 +1,17 @@
+env:
+  map_width: 20
+  map_height: 10
+  num_food_per_team: 10
+  max_steps: 100
+
+training:
+  total_timesteps: 1000
+  num_envs: 2
+  rollout_length: 50
+  checkpoint_interval: 500
+
+logging:
+  experiment_name: "ci_test_run"
+  log_interval: 100
+  print_interval: 200
+  tensorboard: false

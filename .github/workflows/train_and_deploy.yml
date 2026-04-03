@@ -31,7 +31,7 @@ jobs:
         run: |
           # Use a smaller config for CI/CD or the default one.
           # To use a specific config, replace default.yaml with the target config file.
-          python scripts/train.py --config configs/default.yaml
+          python -m scripts.train --config configs/ci.yaml
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
