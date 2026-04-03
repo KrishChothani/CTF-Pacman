@@ -452,14 +452,14 @@ class Trainer:
             # ============================================================
             # Logging
             # ============================================================
-            if total_steps % tcfg.log_interval < tcfg.num_envs:
+            if total_steps % cfg.logging.log_interval < tcfg.num_envs:
                 self.logger.log_scalars(losses, total_steps)
                 summary = self.agg.summarize()
                 if summary:
                     self.logger.log_episode(summary, total_steps)
                 self.agg.reset()
 
-            if total_steps % tcfg.print_interval < tcfg.num_envs:
+            if total_steps % cfg.logging.print_interval < tcfg.num_envs:
                 elapsed = time.time() - t_start
                 sps = total_steps / max(1, elapsed)
                 print(

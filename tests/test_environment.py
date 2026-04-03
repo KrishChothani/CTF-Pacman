@@ -254,7 +254,7 @@ def test_env_step_food_return(cfg: EnvConfig) -> None:
     home_x = (mid - 2 if cfg.map_width % 2 == 0 else mid - 1)
     home_y = 3
     assert not env._grid.is_wall(home_x, home_y), f"Pre-condition: ({home_x},{home_y}) is free"
-    assert env._grid.is_wall(mid, home_y), "Pre-condition: divider at (mid, 3) is wall"
+    assert env._grid.is_wall(home_x + 1, home_y), "Pre-condition: divider at (home_x+1, 3) is wall"
 
     env._state["agent_positions"][0] = (home_x, home_y)
     env._state["agent_carrying"][0] = 3
