@@ -29,29 +29,58 @@ jobs:
 
       - name: Train Model
         run: |
-          # Use a smaller config for CI/CD or the default one.
-          # To use a specific config, replace default.yaml with the target config file.
-          python -m scripts.train --config configs/ci.yaml
+          python -m scripts.train --config configs/default.yaml
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 # Change to your preferred region
+          aws-region: us-east-1
 
-      - name: Upload to S3
+      - name: Resolve S3 Bucket Name
+        id: bucket
         run: |
-          # Use secrets.AWS_S3_BUCKET if present, otherwise fallback to a generated unique name
           BUCKET_NAME="${{ secrets.AWS_S3_BUCKET }}"
+
           if [ -z "$BUCKET_NAME" ]; then
+            # Sanitize github.actor: lowercase, keep only a-z0-9 and hyphens
             ACTOR=$(echo "${{ github.actor }}" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-')
+            # Strip leading/trailing hyphens (invalid in S3 bucket names)
+            ACTOR=$(echo "$ACTOR" | sed 's/^-*//;s/-*$//')
+            # Fallback if actor is empty after sanitization
+            if [ -z "$ACTOR" ]; then
+              ACTOR="default"
+            fi
             BUCKET_NAME="ctf-pacman-logs-$ACTOR"
           fi
-          
-          echo "Target bucket: $BUCKET_NAME"
-          # Create the bucket if it doesn't exist. Ignore errors (e.g. if bucket already exists)
-          aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null || aws s3 mb "s3://$BUCKET_NAME"
-          
-          # Using log_dir='runs/' and experiment_name='ci_test_run' from configs/ci.yaml
-          aws s3 sync runs/ci_test_run "s3://$BUCKET_NAME/ctf_pacman_models/$(date +'%Y-%m-%d_%H-%M-%S')/"
+
+          # Final safety check
+          if [ -z "$BUCKET_NAME" ]; then
+            echo "ERROR: Could not determine a valid S3 bucket name."
+            exit 1
+          fi
+
+          echo "Resolved bucket name: $BUCKET_NAME"
+          # Export for subsequent steps
+          echo "name=$BUCKET_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create S3 Bucket if Not Exists
+        run: |
+          BUCKET_NAME="${{ steps.bucket.outputs.name }}"
+          if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+            echo "Bucket $BUCKET_NAME already exists."
+          else
+            echo "Creating bucket: $BUCKET_NAME"
+            aws s3 mb "s3://$BUCKET_NAME"
+          fi
+
+      - name: Upload Model to S3
+        run: |
+          BUCKET_NAME="${{ steps.bucket.outputs.name }}"
+          TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+          S3_PATH="s3://$BUCKET_NAME/ctf_pacman_models/$TIMESTAMP/"
+
+          echo "Uploading model to: $S3_PATH"
+          aws s3 sync runs/ctf_default "$S3_PATH"
+          echo "Model successfully uploaded to $S3_PATH"
