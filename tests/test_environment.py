@@ -251,8 +251,9 @@ def test_env_step_food_return(cfg: EnvConfig) -> None:
     mid = cfg.map_width // 2
     # Use y=3 — not a gap row (gaps are at h//4=2, h//2=5, 3h//4=7 for h=10)
     # so (mid, 3) IS a wall → stepping East from (mid-1, 3) stays at (mid-1, 3)
-    home_x, home_y = mid - 1, 3
-    assert not env._grid.is_wall(home_x, home_y), "Pre-condition: (mid-1,3) is free"
+    home_x = (mid - 2 if cfg.map_width % 2 == 0 else mid - 1)
+    home_y = 3
+    assert not env._grid.is_wall(home_x, home_y), f"Pre-condition: ({home_x},{home_y}) is free"
     assert env._grid.is_wall(mid, home_y), "Pre-condition: divider at (mid, 3) is wall"
 
     env._state["agent_positions"][0] = (home_x, home_y)
